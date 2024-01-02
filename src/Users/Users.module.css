@@ -1,0 +1,23 @@
+.users {
+    padding: 30px;
+    margin: 30px;
+    border-radius: 10px;
+    background-color: rgb(35, 35, 35);
+    box-shadow: 5px 5px 10px rgba(255, 255, 255, 0.28)
+}
+
+.users tr:nth-child(odd){
+    background-color: rgba(255, 255, 255, 0.243);
+    color: white;
+}
+
+.users td{
+    font-size: 16px;
+    padding: 7px 27px;
+    text-align: center;
+}
+
+.users th{
+    padding: 7px 27px;
+    border-bottom: 3px solid var(--main-color);
+}
