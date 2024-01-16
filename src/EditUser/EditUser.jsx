@@ -1,34 +1,46 @@
-import { useState } from 'react';
-import styles from './Form.module.css';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react'
+import styles from '../Form/Form.module.css';
+import { NavLink, useNavigate, useParams } from 'react-router-dom';
 
-export default function Form({ users, setUsers }) {
 
-    let nav = useNavigate();
+export default function EditUser({ setUsers }) {
 
-    const initialState = localStorage.user ? JSON.parse(localStorage.user) : { fName: '', lName: '', email: '', password: '' };
-    const [formState, setFormState] = useState(initialState);
-    const [formError, setFormError] = useState({ fName: '', lName: '', email: '', password: '' })
+    let { id } = useParams();
+    const nav = useNavigate();
+
+    const [formState, setFormState] = useState({});
+    const [formError, setFormError] = useState({ fName: '', lName: '', email: '', password: '', id: '' })
     const [error, setError] = useState(false);
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]{8,}$/;
 
+    // מילוי השדות אוטומטית בפרטי המשתמש על פי מה שהיה
+    useEffect(() => {
+        axios.get('http://localhost:2500/user/' + id)
+            .then((response) => setFormState(response.data))
+    }, [])
+
+
     const clearForm = () => {
         setFormState({ fName: '', lName: '', email: '', password: '' });
         localStorage.user = ""
-        nav('/');
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         if (Object.values(formError).every((value) => !value.trim())) {
-            axios.post('http://localhost:2500/user', formState)
-                .then((response) => {
-                    setUsers(response.data)
-                        (response.status === 200 && clearForm())
+            axios.put('http://localhost:2500/user/' + id, formState)
+                .then(() => {
+                    return axios.get('http://localhost:2500/user');
                 })
-                .catch((error) => setError(error.response?.data))
+                .then((response) => {
+                    setUsers(response.data);
+                    nav('/');
+                })
+                .catch((error) => {
+                    setError(error.response?.data);
+                });
         }
     };
 
@@ -38,7 +50,6 @@ export default function Form({ users, setUsers }) {
 
         setFormState(oldForm => {
             const newData = { ...oldForm, [name]: value }
-            localStorage.user = JSON.stringify({ ...newData, password: '' });
             return newData;
         });
 
@@ -50,6 +61,10 @@ export default function Form({ users, setUsers }) {
 
         if (name === 'password' && !passwordRegex.test(value) && value.length !== 0) {
             setFormError(oldForm => ({ ...oldForm, [name]: '* Password must be at least 8 characters, including one uppercase letter, one lowercase letter, and one number. Special characters are optional.' }));
+        }
+        
+        if (name === 'id' && value.length !== 8 && value.length !== 0) {
+            setFormError(oldForm => ({ ...oldForm, [name]: '* ID must 8 digits' }));
         }
     };
 
@@ -72,7 +87,17 @@ export default function Form({ users, setUsers }) {
 
     return (
         <form className={styles.form} onSubmit={handleSubmit}>
-            <h2>create user</h2>
+            <h2>Update user</h2>
+            <div className={styles.inputBox}>
+                <label>ID: &nbsp;</label>
+                <input type="number" name='id'
+                    max="99999999"
+                    onChange={handleChange}
+                    value={formState.id}
+                    onBlur={handleBlur}
+                    required />
+                <div className={`${styles.error} ${formError.id ? styles.vis : ''}`}>{formError.id}</div>
+            </div>
             <div className={styles.inputBox}>
                 <label>First Name: &nbsp;</label>
                 <input type="text" name='fName'
@@ -109,18 +134,7 @@ export default function Form({ users, setUsers }) {
                     required />
                 <div className={`${styles.error} ${formError.password ? styles.vis : ''}`}>{formError.password}</div>
             </div>
-            <button className={styles.submit} type="submit">Create user</button>
+            <button className={styles.submit} type="submit">Update user</button>
         </form>
     )
 }
-
-
-
-
-{/* 
-        ^__^
-        (oo)\_______
-        (__)\       )\/\
-            ||----w |
-            ||     ||
-*/}

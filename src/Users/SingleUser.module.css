@@ -1,0 +1,22 @@
+tr {
+    position: relative;
+}
+
+tr:hover #edit {
+    opacity: 1;
+}
+
+#edit {
+    position: absolute;
+    right: -20px;
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0;
+    transition: 0.2s;
+}
+#edit:hover{
+    color: rgb(98, 197, 67);
+}
